@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ludo Superpowers: Stable</title>
+    <title>Ludo Superpowers: Nouka Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@400;700&family=Cinzel:wght@700&display=swap');
 
-        /* VIEWPORT LOCK */
         html, body {
             height: 100dvh; width: 100vw; position: fixed; inset: 0;
             overflow: hidden; font-family: 'Roboto', sans-serif;
@@ -19,27 +18,16 @@
         .pixel-font { font-family: 'Press Start 2P', cursive; }
         .lore-font { font-family: 'Cinzel', serif; }
 
-        /* LADDER */
-        .ladder-wrapper {
-            height: 100%; overflow-y: auto; background: #1a1a1a;
-            border: 4px solid #333; border-radius: 8px; position: relative;
-            scroll-behavior: smooth;
-        }
+        .ladder-wrapper { height: 100%; overflow-y: auto; background: #1a1a1a; border: 4px solid #333; border-radius: 8px; position: relative; scroll-behavior: smooth; }
         .ladder-track { display: flex; flex-direction: column-reverse; padding: 40vh 20px 40vh 20px; }
+        
         .step {
-            width: 100%; height: 60px; background: #2c2c2c;
-            border: 2px solid #444; margin-bottom: -2px; 
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 10px; color: #666; font-weight: bold;
-            position: relative; flex-shrink: 0;
+            width: 100%; height: 60px; background: #2c2c2c; border: 2px solid #444; margin-bottom: -2px; 
+            display: flex; align-items: center; justify-content: space-between; padding: 0 10px; color: #666; font-weight: bold; position: relative; flex-shrink: 0;
         }
         .step:first-child { border-radius: 0 0 10px 10px; }
         .step:last-child { border-radius: 10px 10px 0 0; }
-        .step.active {
-            background: #2e4c2e !important; border-color: #4caf50 !important;
-            color: #fff; z-index: 20; box-shadow: 0 0 20px rgba(76, 175, 80, 0.8);
-            transform: scale(1.05);
-        }
+        .step.active { background: #2e4c2e !important; border-color: #4caf50 !important; color: #fff; z-index: 20; box-shadow: 0 0 20px rgba(76, 175, 80, 0.8); transform: scale(1.05); }
 
         /* COLORS */
         .step.item-gaja { border-left: 8px solid #ffd700; background: #2a2a20; }
@@ -50,6 +38,7 @@
         .step.trap-egg { border-left: 8px solid #84cc16; background: #1f2915; }
         .step.trap-hole { border-left: 8px solid #555; background: #000; border-style: dashed; }
         .step.trap-banana { border-left: 8px solid #eab308; background: #2e2a10; }
+        .step.trap-bandit { border-left: 8px solid #4b5563; background: #1f2937; }
         .step.boss-step { border: 4px dashed #ff0000; background: #3d0000; }
         .step.boss-diddy { border: 4px dashed #ff00ff; background: #3d003d; }
 
@@ -69,6 +58,7 @@
         
         .atk-btn { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-radius: 6px; font-weight: bold; color: white; border-bottom-width: 4px; transition: transform 0.1s; }
         .atk-btn:active { transform: translateY(2px); border-bottom-width: 0; margin-top: 4px; }
+        .atk-btn:disabled { opacity: 0.5; border-bottom-width: 0; transform: translateY(2px); }
     </style>
 </head>
 <body class="flex flex-col md:flex-row p-2 gap-2">
@@ -114,9 +104,9 @@
     <!-- LORE MODAL -->
     <div id="loreModal" class="modal-overlay hidden">
         <div class="bg-slate-900 border-2 border-blue-400 p-6 rounded-lg max-w-md w-full mx-4 shadow-[0_0_30px_rgba(59,130,246,0.5)]">
-            <h2 class="text-2xl text-blue-300 lore-font mb-4 text-center border-b border-blue-800 pb-2">MEMORY RECOVERED</h2>
+            <h2 id="loreTitle" class="text-2xl text-blue-300 lore-font mb-4 text-center border-b border-blue-800 pb-2">MEMORY</h2>
             <div id="loreText" class="text-gray-300 text-sm leading-relaxed italic text-center mb-6"></div>
-            <button onclick="game.closeLore()" class="w-full bg-blue-900 hover:bg-blue-800 text-blue-200 border border-blue-500 py-2 rounded uppercase text-xs tracking-widest">Continue Climb</button>
+            <button onclick="game.closeLore()" class="w-full bg-blue-900 hover:bg-blue-800 text-blue-200 border border-blue-500 py-2 rounded uppercase text-xs tracking-widest">Continue</button>
         </div>
     </div>
 
@@ -132,12 +122,8 @@
                     <span>BOSS: <span id="modalBossHp">100</span></span>
                 </div>
                 <div class="grid grid-cols-2 gap-2 mb-4">
-                    <div class="h-3 bg-gray-800 rounded border border-green-500 overflow-hidden">
-                         <div id="modalPlayerBar" class="h-full bg-green-500 w-full transition-all duration-300"></div>
-                    </div>
-                    <div class="h-3 bg-gray-800 rounded border border-red-500 overflow-hidden">
-                         <div id="modalBossBar" class="h-full bg-red-500 w-full transition-all duration-300"></div>
-                    </div>
+                    <div class="h-3 bg-gray-800 rounded border border-green-500 overflow-hidden"><div id="modalPlayerBar" class="h-full bg-green-500 w-full transition-all duration-300"></div></div>
+                    <div class="h-3 bg-gray-800 rounded border border-red-500 overflow-hidden"><div id="modalBossBar" class="h-full bg-red-500 w-full transition-all duration-300"></div></div>
                 </div>
             </div>
             
@@ -145,13 +131,13 @@
 
             <div id="bossPhase1" class="grid grid-cols-2 gap-3">
                 <button onclick="game.startCombat()" class="bg-red-600 active:bg-red-500 text-white font-bold py-3 rounded border-b-4 border-red-800 active:border-b-0">⚔️ FIGHT</button>
-                <button onclick="game.bossRun()" class="bg-gray-600 active:bg-gray-500 text-white font-bold py-3 rounded border-b-4 border-gray-800 active:border-b-0">🏃 RUN</button>
+                <button id="btnBossAction2" onclick="game.bossRun()" class="bg-gray-600 active:bg-gray-500 text-white font-bold py-3 rounded border-b-4 border-gray-800 active:border-b-0">🏃 RUN</button>
             </div>
 
             <div id="bossPhase2" class="grid grid-cols-1 gap-2 hidden">
-                <button onclick="game.playerAttack('juta')" class="atk-btn bg-yellow-600 border-yellow-800 active:bg-yellow-500"><span>👟 Juta</span> <span class="text-[10px] bg-black/30 px-2 rounded">95% Hit</span></button>
-                <button onclick="game.playerAttack('danda')" class="atk-btn bg-orange-600 border-orange-800 active:bg-orange-500"><span>🪵 Danda</span> <span class="text-[10px] bg-black/30 px-2 rounded">80% Hit</span></button>
-                <button onclick="game.playerAttack('lathi')" class="atk-btn bg-red-600 border-red-800 active:bg-red-500"><span>🦵 Lathi</span> <span class="text-[10px] bg-black/30 px-2 rounded">30% Hit</span></button>
+                <button onclick="game.playerAttack('juta')" class="combat-btn atk-btn bg-yellow-600 border-yellow-800 active:bg-yellow-500"><span>👟 Juta</span> <span class="text-[10px] bg-black/30 px-2 rounded">95% Hit</span></button>
+                <button onclick="game.playerAttack('danda')" class="combat-btn atk-btn bg-orange-600 border-orange-800 active:bg-orange-500"><span>🪵 Danda</span> <span class="text-[10px] bg-black/30 px-2 rounded">80% Hit</span></button>
+                <button onclick="game.playerAttack('lathi')" class="combat-btn atk-btn bg-red-600 border-red-800 active:bg-red-500"><span>🦵 Lathi</span> <span class="text-[10px] bg-black/30 px-2 rounded">30% Hit</span></button>
             </div>
             
             <div id="bossLoreContainer" class="hidden">
@@ -197,20 +183,25 @@
         </div>
     </div>
 
-    <!-- INFO -->
+    <!-- INFO MODAL -->
     <div id="infoModal" class="modal-overlay hidden">
         <div class="bg-gray-800 border border-gray-600 p-6 rounded max-w-lg w-full relative max-h-[90vh] overflow-y-auto mx-4">
             <button onclick="game.toggleInfo()" class="absolute top-2 right-2 text-gray-400 hover:text-white">✕</button>
             <h3 class="text-yellow-400 pixel-font mb-4 text-center">Guide</h3>
             <div class="space-y-4 text-xs">
                 <div class="bg-gray-900 p-2 rounded"><h4 class="text-blue-400 font-bold mb-1 border-b border-gray-700">Items</h4><div class="grid grid-cols-1 gap-1"><div class="flex">🌿 <strong>Gaja:</strong> +/- 7 Steps (50/50)</div><div class="flex">🎲 <strong>Magic:</strong> Pick # to move</div><div class="flex">🌶️ <strong>Morich:</strong> +15 Steps / -20 HP</div><div class="flex">🧪 <strong>Potion:</strong> Random Effect</div></div></div>
-                <div class="bg-gray-900 p-2 rounded"><h4 class="text-red-400 font-bold mb-1 border-b border-gray-700">Bosses</h4><div>👹 <strong>Hasina:</strong> Funny Attacks (Low Dmg)</div><div>🧢 <strong>Diddy:</strong> Oil Slip (8 Dmg)</div></div>
-                <div class="text-gray-400 italic">Tip: If a Boss dodges, they deal 2X damage next!</div>
+                <div class="bg-gray-900 p-2 rounded"><h4 class="text-red-400 font-bold mb-1 border-b border-gray-700">Hazards</h4><div>🦹 <strong>Bandit:</strong> Steals 1-10 HP/Turn</div><div>👹 <strong>Hasina:</strong> Funny Attacks (Low Dmg)</div><div>🧢 <strong>Diddy:</strong> Oil Slip (8 Dmg)</div></div>
             </div>
         </div>
     </div>
 
     <script>
+        // --- AUDIO SETUP ---
+        // Look for nouka.mp3 in the same folder
+        const noukaAudio = new Audio('nouka.mp3');
+        noukaAudio.loop = true; 
+        noukaAudio.volume = 0.5;
+
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const sfx = {
             playTone(freq, type, duration, vol=0.1) {
@@ -221,14 +212,7 @@
                 g.gain.exponentialRampToValueAtTime(0.01,audioCtx.currentTime+duration);
                 o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+duration);
             },
-            chill: () => { // DEEP CHILLING SOUND
-                if(audioCtx.state==='suspended') audioCtx.resume();
-                const o=audioCtx.createOscillator(), g=audioCtx.createGain();
-                o.type='sawtooth'; o.frequency.setValueAtTime(50,audioCtx.currentTime);
-                g.gain.setValueAtTime(0.2,audioCtx.currentTime);
-                g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+3);
-                o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+3);
-            },
+            chill: () => { if(audioCtx.state==='suspended') audioCtx.resume(); const o=audioCtx.createOscillator(), g=audioCtx.createGain(); o.type='sawtooth'; o.frequency.setValueAtTime(50,audioCtx.currentTime); g.gain.setValueAtTime(0.2,audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+3); o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+3); },
             roll: () => { for(let i=0;i<10;i++) setTimeout(()=>sfx.playTone(200+Math.random()*500,'square',0.05,0.05),i*50); },
             move: () => { sfx.playTone(300,'sine',0.1); setTimeout(()=>sfx.playTone(450,'sine',0.1),50); },
             fall: () => { const o=audioCtx.createOscillator(), g=audioCtx.createGain(); o.frequency.setValueAtTime(800,audioCtx.currentTime); o.frequency.exponentialRampToValueAtTime(100,audioCtx.currentTime+1); g.gain.linearRampToValueAtTime(0,audioCtx.currentTime+1); o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+1); },
@@ -237,12 +221,12 @@
             hitLow: () => sfx.playTone(200,'square',0.1),
             hitMed: () => sfx.playTone(150,'sawtooth',0.15),
             hitHigh: () => { sfx.playTone(100,'sawtooth',0.2); setTimeout(()=>sfx.playTone(50,'sawtooth',0.3),100); },
-            damageTaken: () => { sfx.playTone(100,'square',0.3); setTimeout(()=>sfx.playTone(80,'square',0.3),150); },
+            damageTaken: () => { sfx.playTone(100,'square',0.3); setTimeout(()=>sfx.playTone(8,'square',0.3),150); },
             dodge: () => { const o=audioCtx.createOscillator(), g=audioCtx.createGain(); o.frequency.setValueAtTime(600,audioCtx.currentTime); o.frequency.linearRampToValueAtTime(200,audioCtx.currentTime+0.2); g.gain.value=0.1; o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+0.2); },
             crit: () => { for(let i=0;i<3;i++) setTimeout(()=>sfx.playTone(1000,'square',0.1,0.2),i*100); },
             tickle: () => { for(let i=0;i<5;i++) setTimeout(()=>sfx.playTone(800+Math.random()*200,'sine',0.1),i*80); },
             win: () => { [261,329,392,523].forEach((f,i)=>setTimeout(()=>sfx.playTone(f,'triangle',0.5,0.3),i*150)); },
-            lore: () => { sfx.chill(); }
+            lore: () => { sfx.playTone(400,'sine',1.5,0.05); }
         };
 
         const LORE = {
@@ -252,12 +236,14 @@
             60: "MEMORY RECOVERED (Step 60): 'This is the climb of Penance.' You weren't perfect, but you weren't evil. To reach the light, you must rise above the filth.",
             80: "MEMORY RECOVERED (Step 80): The pain of the crash is fading. You remember the faces of those you loved. They are crying, but you feel... peace? You are close now.",
             hasina: "THE IRON LADY'S FATE: She ruled with an iron fist, silencing thousands to keep her throne. The blood of the students turned into the very chains that bind her here. She acts as a gatekeeper, forever denied ascension because she refuses to repent.",
-            diddy: "THE PARTY KING'S FATE: He thought fame granted immunity. His 'parties' were cages for the innocent. Now he is the prisoner, slipping on his own oil, forever trapped in his own Freak Off purgatory."
+            diddy: "THE PARTY KING'S FATE: He thought fame granted immunity. His 'parties' were cages for the innocent. Now he is the prisoner, slipping on his own oil, forever trapped in his own Freak Off purgatory.",
+            bandit: "THE FALLEN PILGRIM: Once a climber like you, he succumbed to greed. He preys on others, hoping to buy his way into heaven. He doesn't realize money has no value up here."
         };
 
         const narrator = {
             hasinaIntro: ["I will fix you!", "Where do you think you're going?", "No visa for you!", "Pay the toll!"],
             diddyIntro: ["No Diddy!", "Party's over here!", "Watch your step.", "Hehehe..."],
+            banditIntro: ["Your money or your life!", "Don't make this hard.", "Spare some change?", "Easy prey."],
             goodItem: ["Lucky you!", "A treasure!", "Jackpot!", "Nice find."],
             badItem: ["Yuck!", "Mistake.", "Disgusting.", "Why?"],
             getLine(cat) { const a=this[cat]||["..."]; return a[Math.floor(Math.random()*a.length)]; }
@@ -265,7 +251,7 @@
 
         const game = {
             step: 0, hp: 100,
-            bossState: { active: false, id: null, hp: 100, maxHp: 100, triggered: { hasina: false, diddy: false }, counterActive: false },
+            bossState: { active: false, id: null, hp: 100, maxHp: 100, triggered: { hasina: false, diddy: false, bandit: false }, counterActive: false },
             inv: { gaja: 0, magic: 0, chili: 0, potion: 0 },
             memoriesTriggered: [],
 
@@ -277,13 +263,13 @@
                 modalBossHp: document.getElementById('modalBossHp'), bossLog: document.getElementById('bossLogArea'),
                 gameOver: document.getElementById('gameOverModal'), winModal: document.getElementById('winModal'),
                 infoModal: document.getElementById('infoModal'), invModal: document.getElementById('invModal'),
-                loreModal: document.getElementById('loreModal'), loreText: document.getElementById('loreText'),
+                loreModal: document.getElementById('loreModal'), loreText: document.getElementById('loreText'), loreTitle: document.getElementById('loreTitle'),
                 bossLoreContainer: document.getElementById('bossLoreContainer'), bossBarsContainer: document.getElementById('bossBarsContainer'),
                 bossLoreText: document.getElementById('bossLoreText'), bossPhase2: document.getElementById('bossPhase2'), bossPhase1: document.getElementById('bossPhase1')
             },
 
             init() {
-                setTimeout(() => this.showLore(LORE.intro), 500);
+                setTimeout(() => this.showLore("INTRO", LORE.intro), 500);
                 const items = { gaja: [4, 7, 15, 33, 72], magic: [25, 50, 90], chili: [12, 40, 82], potion: [28, 65, 95] };
                 for (let i = 1; i <= 100; i++) {
                     const div = document.createElement('div'); div.className = 'step'; div.id = `step-${i}`;
@@ -296,6 +282,7 @@
                     else if (i===10) { div.classList.add('boss-step'); icon='👹'; subtext='BOSS'; }
                     else if (i===20) { div.classList.add('boss-diddy'); icon='🧢'; subtext='BOSS'; }
                     else if (i===22) { div.classList.add('trap-egg'); icon='🥚'; subtext='-10HP'; }
+                    else if (i===30) { div.classList.add('trap-bandit'); icon='🦹'; subtext='BANDIT'; }
                     else if (i===55) { div.classList.add('trap-hole'); icon='⚫'; subtext='RESET'; }
                     else if (i===85) { div.classList.add('trap-banana'); icon='🍌'; subtext='-10'; }
                     div.innerHTML = `<div class="flex flex-col items-center w-12"><span class="text-[9px] text-gray-500">${i}</span><span class="text-[8px] text-gray-400 font-bold leading-tight uppercase text-center w-full">${subtext}</span></div><div class="player-slot flex-grow flex justify-center"></div><span class="text-xl w-8 text-right">${icon}</span>`;
@@ -305,42 +292,63 @@
             },
 
             resetGame() {
+                noukaAudio.pause(); noukaAudio.currentTime = 0;
                 this.step=0; this.hp=100; this.inv={gaja:0,magic:0,chili:0,potion:0};
-                this.bossState={active:false,id:null,hp:100,maxHp:100,triggered:{hasina:false,diddy:false},counterActive:false};
+                this.bossState={active:false,id:null,hp:100,maxHp:100,triggered:{hasina:false,diddy:false,bandit:false},counterActive:false};
                 this.memoriesTriggered = [];
-                this.els.bossPhase2.style.pointerEvents='auto'; this.els.bossPhase2.style.opacity='1';
                 this.els.gameOver.classList.add('hidden'); this.els.winModal.classList.add('hidden');
                 this.els.bossModal.classList.add('hidden'); this.els.invModal.classList.add('hidden');
                 this.els.log.innerHTML=''; 
-                setTimeout(() => this.showLore(LORE.intro), 500);
+                setTimeout(() => this.showLore("INTRO", LORE.intro), 500);
                 this.updateUI(); this.scrollToPlayer();
             },
 
             log(msg) { const d=document.createElement('div'); d.innerText=`> ${msg}`; d.className="mb-1 border-b border-gray-800 pb-1 text-xs md:text-sm text-green-400"; this.els.log.appendChild(d); this.els.log.scrollTop=this.els.log.scrollHeight; },
             narrate(text) { const d=document.createElement('div'); d.innerHTML=`✨ ${text}`; d.className="narrator-text text-xs"; this.els.log.appendChild(d); this.els.log.scrollTop=this.els.log.scrollHeight; },
 
-            showLore(text) { sfx.lore(); this.els.loreText.innerText = text; this.els.loreModal.classList.remove('hidden'); },
+            showLore(title, text) {
+                sfx.lore();
+                this.els.loreTitle.innerText = title;
+                this.els.loreText.innerText = text;
+                this.els.loreModal.classList.remove('hidden');
+            },
             closeLore() { this.els.loreModal.classList.add('hidden'); },
-            checkMemories() { [20, 40, 60, 80].forEach(c => { if (this.step >= c && !this.memoriesTriggered.includes(c)) { this.memoriesTriggered.push(c); setTimeout(() => this.showLore(LORE[c]), 800); } }); },
+            checkMemories() { [20, 40, 60, 80].forEach(c => { if (this.step >= c && !this.memoriesTriggered.includes(c)) { this.memoriesTriggered.push(c); setTimeout(() => this.showLore("MEMORY RECOVERED", LORE[c]), 800); } }); },
 
             updateUI() {
                 this.els.hpVal.textContent=`${this.hp}/100`; this.els.hpBar.style.width=`${Math.max(0,this.hp)}%`;
                 this.els.hpBar.className=`h-full transition-all duration-300 ${this.hp>60?'bg-green-600':this.hp>30?'bg-yellow-500':'bg-red-600'}`;
                 this.els.stepVal.textContent=this.step;
-                ['gaja','magic','chili','potion'].forEach(k=>{ document.getElementById(`btnInv${k.charAt(0).toUpperCase()+k.slice(1)}`).disabled=(this.inv[k]<=0); document.getElementById(`badge${k.charAt(0).toUpperCase()+k.slice(1)}`).innerText=this.inv[k]; });
-                document.querySelectorAll('.step').forEach(el=>el.classList.remove('active')); document.querySelectorAll('.player-slot').forEach(el=>el.innerHTML='');
-                if(this.step>0 && this.step<=100) { const el=document.getElementById(`step-${this.step}`); if(el){ el.classList.add('active'); el.querySelector('.player-slot').innerHTML='<div class="player-token">🤠</div>'; } }
-                if(this.bossState.active) { this.els.modalPlayerHp.innerText=Math.max(0,this.hp); this.els.bossPlayerHpBar.style.width=`${Math.max(0,this.hp)}%`; this.els.bossPlayerHpBar.className=`h-full transition-all duration-300 w-full ${this.hp>30?'bg-green-500':'bg-red-600'}`; }
+                ['gaja','magic','chili','potion'].forEach(k=>{
+                    document.getElementById(`btnInv${k.charAt(0).toUpperCase()+k.slice(1)}`).disabled=(this.inv[k]<=0);
+                    document.getElementById(`badge${k.charAt(0).toUpperCase()+k.slice(1)}`).innerText=this.inv[k];
+                });
+                document.querySelectorAll('.step').forEach(el=>el.classList.remove('active'));
+                document.querySelectorAll('.player-slot').forEach(el=>el.innerHTML='');
+                if(this.step>0 && this.step<=100) {
+                    const el=document.getElementById(`step-${this.step}`);
+                    if(el){ el.classList.add('active'); el.querySelector('.player-slot').innerHTML='<div class="player-token">🤠</div>'; }
+                }
+                if(this.bossState.active) {
+                    this.els.modalPlayerHp.innerText=Math.max(0,this.hp); this.els.bossPlayerHpBar.style.width=`${Math.max(0,this.hp)}%`;
+                    this.els.bossPlayerHpBar.className=`h-full transition-all duration-300 w-full ${this.hp>30?'bg-green-500':'bg-red-600'}`;
+                }
             },
 
             scrollToPlayer() { if(this.step<=0)return; document.getElementById(`step-${this.step}`)?.scrollIntoView({behavior:'smooth',block:'center'}); },
             shakeScreen() { document.body.classList.remove('shake-anim'); void document.body.offsetWidth; document.body.classList.add('shake-anim'); },
             damagePlayer(amt) { this.hp-=amt; sfx.itemBad(); this.shakeScreen(); this.updateUI(); },
-            checkGameOver(reason="You fell.") { if(this.step<0 || this.hp<=0) { if(this.step<0) sfx.fall(); else this.shakeScreen(); this.endGame(this.hp<=0?"Died from damage.":reason); return true; } return false; },
+            checkGameOver(reason="You fell into the abyss.") {
+                if(this.step<0) { sfx.fall(); this.endGame(reason); return true; }
+                if(this.hp<=0) { this.shakeScreen(); this.endGame("You died from damage."); return true; }
+                return false;
+            },
             endGame(msg) {
+                noukaAudio.pause();
                 document.getElementById('deathReason').innerText=msg;
                 const overLog=document.getElementById('gameOverLogContent'); const logTitle=document.getElementById('logTitle');
-                if(this.bossState.active) { overLog.innerHTML=this.els.bossLog.innerHTML; logTitle.innerText="COMBAT LOG:"; } else { overLog.innerHTML=this.els.log.innerHTML; logTitle.innerText="TRAVEL LOG:"; }
+                if(this.bossState.active) { overLog.innerHTML=this.els.bossLog.innerHTML; logTitle.innerText="COMBAT LOG:"; }
+                else { overLog.innerHTML=this.els.log.innerHTML; logTitle.innerText="TRAVEL LOG:"; }
                 this.els.gameOver.classList.remove('hidden'); this.els.bossModal.classList.add('hidden');
             },
             winGame() { sfx.win(); this.step=100; this.updateUI(); this.scrollToPlayer(); this.els.winModal.classList.remove('hidden'); },
@@ -352,7 +360,8 @@
                 if(this.checkGameOver()) return; this.updateUI(); this.scrollToPlayer();
                 await this.processTile(); if(this.step>=100){this.winGame();return;}
                 if(this.checkGameOver()) return;
-                this.checkMemories(); await this.checkBossTriggers();
+                this.checkMemories(); 
+                await this.checkBossTriggers();
             },
 
             async processTile() {
@@ -371,22 +380,48 @@
             async checkBossTriggers() {
                 if(this.step>=10 && !this.bossState.triggered.hasina) await this.startBoss('hasina');
                 else if(this.step>=20 && !this.bossState.triggered.diddy) await this.startBoss('diddy');
+                else if(this.step>=30 && !this.bossState.triggered.bandit) await this.startBoss('bandit');
             },
 
             async startBoss(id) {
-                this.bossState.active=true; this.bossState.id=id; this.bossState.hp=(id==='diddy')?150:100; this.bossState.maxHp=this.bossState.hp;
+                this.bossState.active=true; this.bossState.id=id; 
+                this.bossState.hp = (id==='diddy') ? 150 : (id==='bandit') ? 80 : 100;
+                this.bossState.maxHp=this.bossState.hp;
                 this.bossState.triggered[id]=true; this.bossState.counterActive=false;
                 sfx.itemBad();
+                if (id === 'hasina') noukaAudio.play().catch(e=>console.log("No audio file"));
+                
                 this.els.bossModal.classList.remove('hidden'); this.els.bossPhase1.classList.remove('hidden'); this.els.bossPhase2.classList.add('hidden');
                 this.els.bossLoreContainer.classList.add('hidden'); this.els.bossBarsContainer.classList.remove('hidden'); this.els.bossLog.classList.remove('hidden');
-                this.els.bossPhase2.style.pointerEvents='auto'; this.els.bossPhase2.style.opacity='1'; // RESET BUTTONS
                 
-                document.getElementById('bossName').innerText=id==='hasina'?"SHEIK HASINA":"DIDDY";
-                document.getElementById('bossIcon').innerText=id==='hasina'?"👹":"🧢";
+                const btns = document.querySelectorAll('.combat-btn');
+                btns.forEach(b => { b.disabled = false; b.style.opacity = '1'; });
+
+                const btn2 = document.getElementById('btnBossAction2');
+                if(id==='bandit') {
+                    document.getElementById('bossName').innerText="BANDIT";
+                    document.getElementById('bossIcon').innerText="🦹";
+                    btn2.innerText = "💸 PAY 10 HP";
+                    btn2.onclick = () => game.payBandit();
+                } else {
+                    document.getElementById('bossName').innerText=id==='hasina'?"SHEIK HASINA":"DIDDY";
+                    document.getElementById('bossIcon').innerText=id==='hasina'?"👹":"🧢";
+                    btn2.innerText = "🏃 RUN";
+                    btn2.onclick = () => game.bossRun();
+                }
+
                 this.updateBossUI(); this.updateUI();
                 this.bossLog(`ENCOUNTERED ${id.toUpperCase()}!`);
+                
                 if(id==='hasina') this.bossLog(`"${narrator.getLine('hasinaIntro')}"`);
                 if(id==='diddy') this.bossLog(`"${narrator.getLine('diddyIntro')}"`);
+                if(id==='bandit') this.bossLog(`"${narrator.getLine('banditIntro')}"`);
+            },
+
+            payBandit() {
+                this.damagePlayer(10);
+                this.bossLog("You bribed the bandit.");
+                setTimeout(() => this.bossDefeated(), 1000);
             },
 
             bossLog(msg) { this.els.bossLog.innerHTML+=`<br>> ${msg}`; this.els.bossLog.scrollTop=this.els.bossLog.scrollHeight; },
@@ -394,62 +429,55 @@
             startCombat() { 
                 this.els.bossPhase1.classList.add('hidden'); 
                 this.els.bossPhase2.classList.remove('hidden'); 
-                this.els.bossPhase2.style.pointerEvents='auto'; // SAFETY FORCE UNLOCK
-                this.els.bossPhase2.style.opacity='1';
                 this.bossLog("Choose your attack!"); 
             },
 
             async playerAttack(type) {
-                // DISABLE
-                const btns=this.els.bossPhase2; 
-                btns.style.pointerEvents='none'; 
-                btns.style.opacity='0.5';
+                const btns = document.querySelectorAll('.combat-btn');
+                btns.forEach(b => { b.disabled = true; b.style.opacity = '0.5'; });
+
+                let dmg=0, dodged=false, chance=0;
+                if(type==='juta'){sfx.hitLow();dmg=Math.floor(Math.random()*10)+10;chance=0.05;}
+                else if(type==='danda'){sfx.hitMed();dmg=Math.floor(Math.random()*15)+25;chance=0.20;}
+                else if(type==='lathi'){sfx.hitHigh();dmg=Math.floor(Math.random()*20)+50;chance=0.70;} 
+                if(Math.random()<chance) dodged=true;
 
                 try {
-                    let dmg=0, dodged=false, chance=0;
-                    if(type==='juta'){sfx.hitLow();dmg=Math.floor(Math.random()*10)+10;chance=0.05;}
-                    else if(type==='danda'){sfx.hitMed();dmg=Math.floor(Math.random()*15)+25;chance=0.20;}
-                    else if(type==='lathi'){sfx.hitHigh();dmg=Math.floor(Math.random()*20)+50;chance=0.70;} 
-                    if(Math.random()<chance) dodged=true;
-
                     if(dodged) { sfx.dodge(); this.bossLog(`BOSS DODGED the ${type.toUpperCase()}! 💨`); this.bossState.counterActive=true; }
                     else { this.bossState.hp-=dmg; this.updateBossUI(); this.bossLog(`Hit with ${type}! -${dmg} HP`); }
+                    if(this.bossState.hp<=0) { await this.bossDefeated(); return; }
                     
-                    if(this.bossState.hp<=0) { await this.bossDefeated(); return; } // EXIT AND DON'T RE-ENABLE
-
                     await new Promise(r=>setTimeout(r,1000));
                     
-                    // BOSS TURN
                     let bossDmg=0, atkName="Attack";
                     if(this.bossState.id==='diddy') { bossDmg=8; atkName="Baby Oil Slip"; }
+                    else if(this.bossState.id==='bandit') {
+                        bossDmg = Math.floor(Math.random()*10)+1;
+                        atkName = (bossDmg<=5) ? "Quick Pickpocket" : "Mugged!";
+                    }
                     else { const a=[{n:"Helmet Throw",d:8},{n:"Crocodile Tears",d:5},{n:"Internet Shutdown",d:10},{n:"Ayna Ghor Threat",d:12}]; const r=a[Math.floor(Math.random()*a.length)]; bossDmg=r.d; atkName=r.n; }
                     
                     if(this.bossState.counterActive) { sfx.crit(); bossDmg*=2; this.bossLog("CRITICAL COUNTER! 💥"); this.bossState.counterActive=false; }
                     else { sfx.damageTaken(); }
                     
                     this.bossLog(`${atkName}! -${bossDmg} HP`); this.damagePlayer(bossDmg);
-                    
-                    if(this.hp<=0) { this.endGame("Killed by Boss."); return; } // EXIT AND DON'T RE-ENABLE
-
-                } catch(e) {
-                    console.error(e);
+                    if(this.hp<=0) { this.endGame("Killed by Boss."); return; }
                 } finally { 
-                    // RE-ENABLE IF STILL ALIVE AND FIGHTING
-                    if(this.hp>0 && this.bossState.hp>0 && this.bossState.active){ 
-                        btns.style.pointerEvents='auto'; btns.style.opacity='1'; 
+                    if(this.hp>0 && this.bossState.hp>0){ 
+                        btns.forEach(b => { b.disabled = false; b.style.opacity = '1'; });
                     } 
                 }
             },
 
             async bossDefeated() {
-                sfx.itemGood(); 
-                // No longer active combat
+                noukaAudio.pause();
+                sfx.itemGood(); this.bossState.active=false;
                 this.els.bossBarsContainer.classList.add('hidden'); this.els.bossLog.classList.add('hidden'); this.els.bossPhase2.classList.add('hidden');
                 this.els.bossLoreContainer.classList.remove('hidden');
                 this.els.bossLoreText.innerText = LORE[this.bossState.id];
             },
-            closeBoss() { this.els.bossModal.classList.add('hidden'); this.bossState.active=false; this.log(`Defeated Boss!`, 'good'); },
-            async bossRun() { sfx.fall(); this.bossLog("Trying to run..."); await new Promise(r=>setTimeout(r,1000)); this.bossLog("CAUGHT! Sent to Step 0."); this.step=0; setTimeout(()=>{this.els.bossModal.classList.add('hidden');this.bossState.active=false;this.updateUI();this.scrollToPlayer();},1500); },
+            closeBoss() { this.els.bossModal.classList.add('hidden'); this.log(`Defeated Boss!`, 'good'); },
+            async bossRun() { noukaAudio.pause(); sfx.fall(); this.bossLog("Trying to run..."); await new Promise(r=>setTimeout(r,1000)); this.bossLog("CAUGHT! Sent to Step 0."); this.step=0; setTimeout(()=>{this.els.bossModal.classList.add('hidden');this.bossState.active=false;this.updateUI();this.scrollToPlayer();},1500); },
             
             openInventory() { if(!this.bossState.active) this.els.invModal.classList.remove('hidden'); },
             closeInventory() { this.els.invModal.classList.add('hidden'); document.getElementById('magicPicker').classList.add('hidden'); },
