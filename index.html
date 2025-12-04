@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ludo Superpowers: Balance Update</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@400;700&family=Cinzel:wght@700&display=swap');
+
+        html, body {
+            height: 100dvh; width: 100vw; position: fixed; inset: 0;
+            overflow: hidden; font-family: 'Roboto', sans-serif;
+            background-color: #0d0d0d; color: #e0e0e0;
+            user-select: none; touch-action: none;
+        }
+
+        .pixel-font { font-family: 'Press Start 2P', cursive; }
+        .lore-font { font-family: 'Cinzel', serif; }
+
+        .ladder-wrapper { height: 100%; overflow-y: auto; background: #1a1a1a; border: 4px solid #333; border-radius: 8px; position: relative; scroll-behavior: smooth; }
+        .ladder-track { display: flex; flex-direction: column-reverse; padding: 40vh 20px 40vh 20px; }
+        
+        .step {
+            width: 100%; height: 60px; background: #2c2c2c; border: 2px solid #444; margin-bottom: -2px; 
+            display: flex; align-items: center; justify-content: space-between; padding: 0 10px; color: #666; font-weight: bold; position: relative; flex-shrink: 0;
+        }
+        .step:first-child { border-radius: 0 0 10px 10px; }
+        .step:last-child { border-radius: 10px 10px 0 0; }
+        .step.active { background: #2e4c2e !important; border-color: #4caf50 !important; color: #fff; z-index: 20; box-shadow: 0 0 20px rgba(76, 175, 80, 0.8); transform: scale(1.05); }
+
+        /* COLORS */
+        .step.item-gaja { border-left: 8px solid #ffd700; background: #2a2a20; }
+        .step.item-magic { border-left: 8px solid #a855f7; background: #2a202a; }
+        .step.item-chili { border-left: 8px solid #ef4444; background: #2a1a1a; }
+        .step.item-potion { border-left: 8px solid #3b82f6; background: #1a202c; }
+        .step.item-wire { border-left: 8px solid #fbbf24; background: #451a03; } 
+        .step.item-mojo { border-left: 8px solid #ef4444; background: #450a0a; } 
+        .step.item-roafja { border-left: 8px solid #ec4899; background: #500724; }
+        
+        .step.trap-shit { border-left: 8px solid #78350f; background: #291d15; }
+        .step.trap-egg { border-left: 8px solid #84cc16; background: #1f2915; }
+        .step.trap-hole { border-left: 8px solid #555; background: #000; border-style: dashed; }
+        .step.trap-banana { border-left: 8px solid #eab308; background: #2e2a10; }
+        .step.trap-bandit { border-left: 8px solid #4b5563; background: #1f2937; }
+        .step.trap-mud { border-left: 8px solid #5d4037; background: #3e2723; }
+        .step.trap-idol { border-left: 8px solid #9c27b0; background: #4a148c; }
+        .step.trap-moss { border-left: 8px solid #33691e; background: #1b5e20; }
+        
+        .step.boss-step { border: 4px dashed #ff0000; background: #3d0000; }
+        .step.boss-diddy { border: 4px dashed #ff00ff; background: #3d003d; }
+        .step.boss-logan { border: 4px dashed #a3e635; background: #1a2e05; }
+        .step.boss-elon { border: 4px dashed #60a5fa; background: #0c4a6e; }
+        .step.boss-zuck { border: 4px dashed #14b8a6; background: #042f2e; }
+        .step.boss-trump { border: 4px dashed #f97316; background: #431407; }
+        .step.boss-guardian { border: 4px dashed #fbbf24; background: #422006; box-shadow: inset 0 0 20px #fbbf24; }
+
+        .player-token { font-size: 2rem; animation: bounce 0.8s infinite alternate; filter: drop-shadow(0 4px 2px rgba(0,0,0,0.8)); }
+        @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-8px); } }
+        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        .shake-anim { animation: shake 0.3s ease-in-out; }
+
+        .log-box { font-family: 'Courier New', monospace; font-size: 0.75rem; height: 100%; overflow-y: auto; background: #000; border: 1px solid #333; color: #00ff9d; padding: 8px; }
+        .narrator-text { color: #fbbf24; font-style: italic; border-left: 2px solid #fbbf24; padding-left: 8px; margin: 4px 0; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 50; display: flex; align-items: center; justify-content: center; }
+
+        .inv-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px; border-radius: 8px; background: #1f2937; border: 2px solid #374151; transition: all 0.2s; }
+        .inv-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .inv-btn:active { transform: scale(0.95); }
+        .count-badge { background: red; color: white; border-radius: 999px; padding: 2px 6px; font-size: 10px; margin-top: 4px; }
+        
+        .atk-btn { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-radius: 6px; font-weight: bold; color: white; border-bottom-width: 4px; transition: transform 0.1s; }
+        .atk-btn:active { transform: translateY(2px); border-bottom-width: 0; margin-top: 4px; }
+        .atk-btn:disabled { opacity: 0.5; border-bottom-width: 0; transform: translateY(2px); }
+    </style>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="flex flex-col md:flex-row p-2 gap-2">
+
+    <!-- LEFT PANEL -->
+    <div class="w-full md:w-1/3 flex flex-col gap-2 z-20 flex-none h-[40%] md:h-auto">
+        <div class="bg-gray-900 p-3 rounded border border-gray-700 shadow-xl flex flex-col gap-2">
+            <div class="flex justify-between items-center">
+                <h1 class="text-lg text-yellow-400 pixel-font leading-relaxed">LUDO<br>SAGA</h1>
+                <div class="text-right">
+                    <div class="text-[10px] text-gray-400 uppercase">Health</div>
+                    <div id="hpVal" class="text-sm font-bold">100/100</div>
+                </div>
+            </div>
+            <div class="w-full h-3 bg-gray-800 rounded overflow-hidden border border-gray-600">
+                <div id="hpBar" class="h-full bg-gradient-to-r from-red-600 to-red-400 transition-all duration-300" style="width: 100%;"></div>
+            </div>
+            <div class="bg-black p-2 rounded border border-gray-800 text-center flex justify-between items-center px-4 relative">
+                <span class="text-gray-500 text-xs uppercase">Step</span>
+                <span id="stepVal" class="text-2xl font-bold text-blue-400">0</span>
+                <div id="curseIcon" class="absolute right-2 top-2 text-purple-500 animate-pulse hidden" title="Cursed! Max Roll 3">🗿</div>
+                <div id="buffIcon" class="absolute right-8 top-2 bg-yellow-600 text-white text-xs px-2 py-1 rounded font-bold animate-pulse hidden">2x</div>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                <button id="btnRoll" onclick="game.rollDice()" class="col-span-2 bg-blue-700 active:bg-blue-600 text-white font-bold py-3 rounded border-b-4 border-blue-900 active:border-b-0 active:translate-y-1 transition-all text-sm">🎲 ROLL (R)</button>
+                <button onclick="game.openInventory()" class="bg-purple-700 active:bg-purple-600 text-white font-bold py-2 rounded border-b-4 border-purple-900 active:border-b-0 active:translate-y-1 transition-all text-xs">🎒 BAG</button>
+                <button onclick="game.toggleInfo()" class="bg-gray-700 active:bg-gray-600 text-gray-200 text-xs py-2 rounded border-b-4 border-gray-800 active:border-b-0 active:translate-y-1">📜 GUIDE</button>
+                <button onclick="game.toggleVoice()" id="btnVoice" class="col-span-2 bg-pink-700 active:bg-pink-600 text-white font-bold py-2 rounded border-b-4 border-pink-900 active:border-b-0 active:translate-y-1 text-xs">🔊 AI VOICE: OFF</button>
+                <button onclick="game.openTestMenu()" type="button" class="col-span-2 bg-gray-800 text-gray-400 text-[10px] py-1 rounded border border-gray-700 hover:bg-gray-700 cursor-pointer">🛠️ DEV MENU</button>
+            </div>
+        </div>
+        <div class="flex-grow flex flex-col bg-gray-900 rounded border border-gray-700 p-2 min-h-0">
+            <span class="text-[10px] text-gray-500 mb-1 uppercase">Log</span>
+            <div id="gameLog" class="log-box rounded"></div>
+        </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="w-full md:w-2/3 relative flex flex-col bg-black rounded border border-gray-800 flex-grow min-h-0">
+        <div class="ladder-wrapper" id="scrollContainer">
+            <div id="ladderTrack" class="ladder-track"></div>
+        </div>
+        <div class="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-black to-transparent pointer-events-none z-10"></div>
+        <div class="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-black to-transparent pointer-events-none z-10"></div>
+    </div>
+
+    <!-- ITEM PICKUP MODAL -->
+    <div id="pickupModal" class="modal-overlay hidden">
+        <div class="bg-gray-800 border-2 border-green-500 p-6 rounded-lg max-w-sm w-full text-center shadow-[0_0_30px_rgba(34,197,94,0.4)] mx-4">
+            <div id="pickupIcon" class="text-6xl mb-2">🎁</div>
+            <h2 id="pickupTitle" class="text-2xl text-green-400 pixel-font mb-2">ITEM NAME</h2>
+            <p id="pickupDesc" class="text-gray-300 text-sm mb-4 leading-relaxed"></p>
+            <button onclick="game.closePickup()" class="bg-green-700 text-white font-bold py-3 px-8 rounded hover:bg-green-600 border-b-4 border-green-900 active:border-b-0">KEEP IT</button>
+        </div>
+    </div>
+
+    <!-- PASSWORD MODAL -->
+    <div id="passwordModal" class="modal-overlay hidden z-[60]">
+        <div class="bg-gray-800 border border-gray-600 p-6 rounded-lg shadow-2xl max-w-xs w-full">
+            <h3 class="text-white mb-2 font-bold pixel-font text-xs">SECURITY CHECK</h3>
+            <p class="text-[10px] text-gray-400 mb-2">Enter Developer Password:</p>
+            <input type="password" id="devPasswordInput" class="w-full bg-black text-white border border-gray-600 p-2 rounded mb-4 text-sm font-mono tracking-widest placeholder-gray-700" placeholder="••••">
+            <div class="flex justify-end gap-2">
+                <button onclick="game.closePasswordModal()" class="bg-gray-700 text-gray-300 px-3 py-2 rounded text-[10px] hover:bg-gray-600 font-bold">CANCEL</button>
+                <button onclick="game.checkPassword()" class="bg-blue-600 text-white px-3 py-2 rounded text-[10px] hover:bg-blue-500 font-bold border-b-2 border-blue-800 active:border-b-0 active:translate-y-[2px]">UNLOCK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TEST MENU MODAL -->
+    <div id="testModal" class="modal-overlay hidden">
+        <div class="bg-gray-900 border-2 border-gray-500 p-6 rounded-lg max-w-sm w-full relative mx-4">
+            <button onclick="game.closeTestMenu()" class="absolute top-2 right-2 text-gray-400 hover:text-white">✕</button>
+            <h2 class="text-xl text-gray-300 pixel-font mb-4 text-center">DEV TOOLS</h2>
+            
+            <div class="mb-4 border-b border-gray-700 pb-4">
+                <label class="block text-xs text-gray-500 mb-1">JUMP TO STEP</label>
+                <div class="flex gap-2">
+                    <input id="cheatStepInput" type="number" min="0" max="100" class="bg-black text-white border border-gray-600 rounded p-2 w-full text-sm" placeholder="0-100">
+                    <button onclick="game.cheatJump()" class="bg-blue-700 text-white px-4 rounded font-bold text-xs">GO</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+                <label class="col-span-2 text-xs text-gray-500">ADD ITEMS</label>
+                <button onclick="game.cheatItem('gaja')" class="bg-gray-800 text-yellow-400 p-2 rounded text-xs border border-gray-700 hover:bg-gray-700">🌿 Gaja</button>
+                <button onclick="game.cheatItem('magic')" class="bg-gray-800 text-purple-400 p-2 rounded text-xs border border-gray-700 hover:bg-gray-700">🎲 Magic</button>
+                <button onclick="game.cheatItem('chili')" class="bg-gray-800 text-red-400 p-2 rounded text-xs border border-gray-700 hover:bg-gray-700">🌶️ Chili</button>
+                <button onclick="game.cheatItem('potion')" class="bg-gray-800 text-blue-400 p-2 rounded text-xs border border-gray-700 hover:bg-gray-700">🧪 Potion</button>
+                <button onclick="game.cheatItem('wire')" class="bg-gray-800 text-yellow-600 p-2 rounded text-xs border border-gray-700 hover:bg-gray-700">⚡ Tar</button>
+                <button onclick="game.cheatItem('mojo')" class="bg-gray-800 text-red-600 p-2 rounded text-xs border border-gray-700 hover:bg-gray-700">🥤 Mojo</button>
+                <button onclick="game.cheatItem('roafja')" class="bg-gray-800 text-pink-600 p-2 rounded text-xs border border-gray-700 hover:bg-gray-700">🍷 Roafja</button>
+                <button onclick="game.cheatHeal()" class="bg-green-900 text-green-400 p-2 rounded text-xs border border-gray-700 hover:bg-green-800">❤️ Heal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOSS MODAL -->
+    <div id="bossModal" class="modal-overlay hidden">
+        <div class="bg-red-900 border-4 border-red-600 p-4 rounded-lg max-w-sm w-full text-center shadow-2xl mx-4 relative">
+            <div id="bossMusicStatus" class="absolute top-2 right-2 text-[8px] text-gray-400 font-mono">🎵 ...</div>
+            
+            <div id="bossIcon" class="text-5xl mb-2">👹</div>
+            <h2 id="bossName" class="text-xl text-yellow-300 pixel-font mb-2">BOSS</h2>
+            
+            <div id="bossTurnIndicator" class="text-sm font-bold text-white bg-black/50 py-1 mb-2 rounded animate-pulse">YOUR TURN</div>
+            
+            <div class="flex justify-center gap-2 mb-2 text-[10px]">
+                <span id="bossStunStatus" class="bg-yellow-500 text-black px-2 py-1 rounded font-bold hidden">⚡ STUNNED</span>
+                <span id="bossDodgeStatus" class="bg-pink-500 text-white px-2 py-1 rounded font-bold hidden">👁️ NO DODGE</span>
+            </div>
+
+            <div id="bossBarsContainer">
+                <div class="flex justify-between text-[10px] text-white font-bold mb-1 px-1">
+                    <span>YOU: <span id="modalPlayerHp">100</span></span>
+                    <span>BOSS: <span id="modalBossHp">100</span></span>
+                </div>
+                <div class="grid grid-cols-2 gap-2 mb-4">
+                    <div class="h-3 bg-gray-800 rounded border border-green-500 overflow-hidden"><div id="modalPlayerBar" class="h-full bg-green-500 w-full transition-all duration-300"></div></div>
+                    <div class="h-3 bg-gray-800 rounded border border-red-500 overflow-hidden"><div id="modalBossBar" class="h-full bg-red-500 w-full transition-all duration-300"></div></div>
+                </div>
+            </div>
+            
+            <div id="bossLogArea" class="h-20 bg-black/50 text-red-200 text-xs p-2 mb-4 overflow-y-auto border border-red-800 text-left font-mono"></div>
+
+            <div id="bossPhase1" class="grid grid-cols-2 gap-3">
+                <button onclick="game.startCombat()" class="bg-red-600 active:bg-red-500 text-white font-bold py-3 rounded border-b-4 border-red-800 active:border-b-0">⚔️ FIGHT</button>
+                <button id="btnBossAction2" onclick="game.bossRun()" class="bg-gray-600 active:bg-gray-500 text-white font-bold py-3 rounded border-b-4 border-gray-800 active:border-b-0">🏃 RUN</button>
+            </div>
+            
+            <button id="btnRetryMusic" onclick="game.retryMusic()" class="hidden w-full mt-2 bg-gray-700 text-xs py-1 rounded">🔊 Retry Music</button>
+
+            <div id="bossPhase2" class="hidden">
+                <div class="grid grid-cols-3 gap-1 mb-2">
+                    <button onclick="game.playerAttack('juta')" class="combat-btn bg-yellow-600 border-yellow-800 text-[10px] py-2 rounded font-bold text-white">👟 Juta</button>
+                    <button onclick="game.playerAttack('danda')" class="combat-btn bg-orange-600 border-orange-800 text-[10px] py-2 rounded font-bold text-white">🪵 Danda</button>
+                    <button onclick="game.playerAttack('lathi')" class="combat-btn bg-red-600 border-red-800 text-[10px] py-2 rounded font-bold text-white">🦵 Lathi</button>
+                </div>
+                <div class="grid grid-cols-3 gap-1 border-t border-red-800 pt-2">
+                    <button onclick="game.useCombatItem('wire')" id="btnCombatWire" class="combat-item-btn bg-yellow-800 border-yellow-950 text-[9px] py-1 rounded text-white">⚡ Tar (Stun 5) <span id="cntWire">0</span></button>
+                    <button onclick="game.useCombatItem('mojo')" id="btnCombatMojo" class="combat-item-btn bg-red-800 border-red-950 text-[9px] py-1 rounded text-white">🥤 Mojo (+20HP) <span id="cntMojo">0</span></button>
+                    <button onclick="game.useCombatItem('roafja')" id="btnCombatRoafja" class="combat-item-btn bg-pink-800 border-pink-950 text-[9px] py-1 rounded text-white">🍷 Roafja (Hit 2) <span id="cntRoafja">0</span></button>
+                </div>
+            </div>
+
+            <div id="bossRewardContainer" class="hidden">
+                <h3 class="text-yellow-400 pixel-font mb-4 text-sm">CHOOSE REWARD</h3>
+                <div class="grid grid-cols-1 gap-2">
+                    <button onclick="game.claimReward('heal')" class="bg-green-700 text-white py-3 rounded font-bold border-b-4 border-green-900">❤️ +50 HP</button>
+                    <button onclick="game.claimReward('buff')" class="bg-blue-700 text-white py-3 rounded font-bold border-b-4 border-blue-900">🎲 2x Roll</button>
+                    <button onclick="game.claimReward('jump')" class="bg-purple-700 text-white py-3 rounded font-bold border-b-4 border-purple-900">🚀 +15 Steps</button>
+                </div>
+            </div>
+            
+            <div id="bossLoreContainer" class="hidden">
+                <p id="bossLoreText" class="text-sm text-yellow-100 italic mb-4 leading-relaxed"></p>
+                <button onclick="game.closeBoss()" class="bg-yellow-600 text-black font-bold py-2 px-6 rounded hover:bg-yellow-500">PROCEED</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- INVENTORY -->
+    <div id="invModal" class="modal-overlay hidden">
+        <div class="bg-gray-800 border-2 border-purple-500 p-6 rounded-lg max-w-md w-full relative mx-4">
+            <button onclick="game.closeInventory()" class="absolute top-2 right-2 text-gray-400 hover:text-white font-bold">✕</button>
+            <h2 class="text-xl text-purple-400 pixel-font mb-4 text-center">INVENTORY</h2>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <button id="btnInvGaja" onclick="game.useGaja()" class="inv-btn group"><span class="text-2xl">🌿</span> <span class="text-xs font-bold text-gray-300">Gaja</span> <span id="badgeGaja" class="count-badge">0</span></button>
+                <button id="btnInvMagic" onclick="game.openMagicPicker()" class="inv-btn group"><span class="text-2xl">🎲</span> <span class="text-xs font-bold text-gray-300">Magic</span> <span id="badgeMagic" class="count-badge">0</span></button>
+                <button id="btnInvChili" onclick="game.useChili()" class="inv-btn group"><span class="text-2xl">🌶️</span> <span class="text-xs font-bold text-gray-300">Morich</span> <span id="badgeChili" class="count-badge">0</span></button>
+                <button id="btnInvPotion" onclick="game.usePotion()" class="inv-btn group"><span class="text-2xl">🧪</span> <span class="text-xs font-bold text-gray-300">Potion</span> <span id="badgePotion" class="count-badge">0</span></button>
+            </div>
+            <div class="text-center text-xs text-gray-500 border-t border-gray-700 pt-2">Combat Items (Use in Boss Fight):</div>
+            <div class="flex justify-center gap-4 mt-2 text-xs text-gray-300">
+                <div>⚡ Tar: <span id="invWireVal">0</span></div>
+                <div>🥤 Mojo: <span id="invMojoVal">0</span></div>
+                <div>🍷 Roafja: <span id="invRoafjaVal">0</span></div>
+            </div>
+            <div id="magicPicker" class="absolute inset-0 bg-gray-900/95 flex flex-col items-center justify-center hidden rounded-lg z-50">
+                <h3 class="text-yellow-400 mb-4">Pick Steps:</h3>
+                <div class="grid grid-cols-3 gap-3">
+                    <script>document.write([1,2,3,4,5,6].map(n => `<button onclick="game.useMagicDice(${n})" class="w-12 h-12 bg-purple-600 rounded font-bold text-white hover:bg-purple-500">${n}</button>`).join(''))</script>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LORE MODAL -->
+    <div id="loreModal" class="modal-overlay hidden">
+        <div class="bg-slate-900 border-2 border-blue-400 p-6 rounded-lg max-w-md w-full mx-4 shadow-[0_0_30px_rgba(59,130,246,0.5)]">
+            <h2 id="loreTitle" class="text-2xl text-blue-300 lore-font mb-4 text-center border-b border-blue-800 pb-2">MEMORY</h2>
+            <div id="loreText" class="text-gray-300 text-sm leading-relaxed italic text-center mb-6"></div>
+            <button onclick="game.closeLore()" class="w-full bg-blue-900 hover:bg-blue-800 text-blue-200 border border-blue-500 py-2 rounded uppercase text-xs tracking-widest">Continue</button>
+        </div>
+    </div>
+
+    <!-- END SCREENS -->
+    <div id="winModal" class="modal-overlay hidden">
+        <div class="text-center"><h1 class="text-5xl text-yellow-400 pixel-font mb-6 animate-bounce">HEAVEN!</h1><p class="text-xl text-gray-300 mb-2">The Test is Over.</p><button onclick="game.resetGame()" class="bg-yellow-500 text-black font-bold py-3 px-8 rounded border-b-4 border-yellow-700">REINCARNATE</button></div>
+    </div>
+    <div id="gameOverModal" class="modal-overlay hidden">
+        <div class="text-center max-w-lg w-full p-6 bg-gray-900 border-4 border-red-600 rounded-lg relative shadow-2xl mx-4">
+            <h1 class="text-3xl md:text-5xl text-red-600 pixel-font mb-4 animate-pulse">ABYSS</h1>
+            <p id="deathReason" class="text-sm text-gray-300 mb-4">You fell.</p>
+            <div class="text-left bg-black border border-gray-700 p-3 rounded h-32 overflow-y-auto mb-6 font-mono text-[10px] text-green-400 shadow-inner">
+                <div id="logTitle" class="text-gray-500 border-b border-gray-800 mb-2 pb-1 uppercase tracking-widest">Final Moments:</div>
+                <div id="gameOverLogContent"></div>
+            </div>
+            <button onclick="game.resetGame()" class="w-full bg-white text-black font-bold py-3 rounded hover:bg-gray-200">Try Again</button>
+        </div>
+    </div>
+
+    <!-- INFO MODAL -->
+    <div id="infoModal" class="modal-overlay hidden">
+        <div class="bg-gray-800 border border-gray-600 p-6 rounded max-w-lg w-full relative max-h-[90vh] overflow-y-auto mx-4">
+            <button onclick="game.toggleInfo()" class="absolute top-2 right-2 text-gray-400 hover:text-white">✕</button>
+            <h3 class="text-yellow-400 pixel-font mb-4 text-center">Guide</h3>
+            <div class="space-y-4 text-xs">
+                <div class="bg-gray-900 p-2 rounded"><h4 class="text-blue-400 font-bold mb-1 border-b border-gray-700">Items</h4><div class="grid grid-cols-1 gap-1"><div class="flex">🌿 <strong>Gaja:</strong> +/- 7 Steps (50/50)</div><div class="flex">🎲 <strong>Magic:</strong> Pick # to move</div><div class="flex">🌶️ <strong>Morich:</strong> +15 Steps / -20 HP</div><div class="flex">🧪 <strong>Potion:</strong> Random Effect</div></div></div>
+                <div class="bg-gray-900 p-2 rounded"><h4 class="text-red-400 font-bold mb-1 border-b border-gray-700">Hazards</h4><div>🦹 <strong>Bandit:</strong> Steals 1-10 HP/Turn</div><div>👹 <strong>Hasina:</strong> Funny Attacks (Low Dmg)</div><div>🧢 <strong>Diddy:</strong> Oil Slip (8 Dmg)</div><div>👁️ <strong>Guardian:</strong> The Final Test (Step 100)</div></div>
+                <div class="bg-gray-900 p-2 rounded"><h4 class="text-green-400 font-bold mb-1 border-b border-gray-700">Combat Items</h4><div>⚡ <strong>Tar:</strong> Stuns Boss (5 Turns)</div><div>🥤 <strong>Mojo:</strong> +20 HP (Instant)</div><div>🍷 <strong>Roafja:</strong> Boss Can't Dodge (2 Turns)</div></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="index.tsx"></script>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
