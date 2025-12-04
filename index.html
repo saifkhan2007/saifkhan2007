@@ -497,7 +497,7 @@
                 
                 this.currentBossAudio = new Audio(`${filename}.mp3`);
                 this.currentBossAudio.loop = true;
-                this.currentBossAudio.volume = 0.2; // 20% volume
+                this.currentBossAudio.volume = 0.5; // 20% volume
                 this.currentBossAudio.play().catch(e => console.warn("Audio play blocked or file missing:", e));
             },
 
